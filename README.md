@@ -1,6 +1,6 @@
-#  Department Room Reservation System
+#  Department Rooms Reservation System
 
-This project is a  Department Room Reservation System that allows users to reserve rooms for specific time slots on a selected date. Users can log in to the system, view available slots, and book rooms. Additionally, it shows which user has booked a slot when a booked slot is clicked.
+This project is a  Department Rooms Reservation System that allows users to reserve rooms for specific time slots on a selected date. Users can log in to the system, view available slots, and book rooms. Additionally, it shows which user has booked a slot when a booked slot is clicked.
 #Case Study
 Department rooms reservation system: The workflow of the process is as follows:
 a) Registered user can reserve any of the lecture rooms of the department.

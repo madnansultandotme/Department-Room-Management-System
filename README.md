@@ -36,5 +36,6 @@ g) Accordingly to implemented data (saved) the room is reserved by user.
 Open your terminal or command prompt and run the following command to clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/room-reservation-system.git
-cd room-reservation-system
+https://github.com/madnansultandotme/Department-Rooms-Reservation-System.git
+
+cd Department-Rooms-Reservation-System

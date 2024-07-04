@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Reservation</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .logout-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 100px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .logout-button:hover {
+            background-color: #c82333;
+        }
+        .resrv-btn {
+            display: block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .resrv-btn:hover {
+            background-color: #0056b3;
+        }
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 20px;
+            z-index: 1000;
+            display: none;
+        }
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+        .popup button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .popup button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Room Reservation</h2>
+        <form action="logout.php" method="POST">
+            <button type="submit" class="logout-button">Logout</button>
+        </form>
+        <form id="reservationForm" action="reserve.php" method="POST">
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" required>
+            <table id="reservationTable">
+                <tr>
+                    <th>Room/Time</th>
+                    <th>09:00 - 10:45</th>
+                    <th>11:00 - 12:15</th>
+                    <th>12:15 - 13:15</th>
+                    <th>13:15 - 14:45</th>
+                    <th>14:45 - 15:45</th>
+                    <th>15:45 - 16:00</th>
+                    <th>16:00 - 17:00</th>
+                    <th>17:00 - 18:00</th>
+                    <th>18:00 - 20:00</th>
+                </tr>
+                <tr>
+                    <td>207</td>
+                    <td><input type="checkbox" name="reservation[]" value="207,09:00:00"></td>
+                    <td><input type="checkbox" name="reservation[]" value="207,11:00:00"></td>
+                    <td><input type="checkbox" name="reservation[]" value="207,12:15:00"></td>
+                    <td><input type="checkbox" name="reservation[]" value="207,13:15:00"></td>
+                    <td><input type="checkbox" name="reservation[]" value="207,14:45:00"></td>
+                    <td><input type="checkbox" name="reservation[]" value="207,15:45:00"></td>
+                    <td><input type="checkbox" name="reservation[]" value="207,16:00:00"></td>
+                    <td><input type="checkbox" name="reservation[]" value="207,17:00:00"></td>
+                    <td><input type="checkbox" name="reservation[]" value="207,18:00:00"></td>
+                </tr>
+                <!-- Add more rows for other rooms as needed -->
+            </table>
+            <button type="submit" class="resrv-btn">OK</button>
+            <p class="error-message" id="error-message"></p>
+        </form>
+    </div>
+
+    <div class="popup-overlay" id="popup-overlay"></div>
+    <div class="popup" id="popup">
+        <p id="popup-message"></p>
+        <button onclick="closePopup()">Close</button>
+    </div>
+
+    <script>
+        // Set the minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        const dateInput = document.getElementById('date');
+        dateInput.setAttribute('min', today);
+
+        // Function to set the date input to today's date
+        function setDateToToday() {
+            dateInput.value = today;
+        }
+
+        function showPopup(message) {
+            const popup = document.getElementById('popup');
+            const overlay = document.getElementById('popup-overlay');
+            document.getElementById('popup-message').textContent = message;
+            popup.style.display = 'block';
+            overlay.style.display = 'block';
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('popup');
+            const overlay = document.getElementById('popup-overlay');
+            popup.style.display = 'none';
+            overlay.style.display = 'none';
+        }
+
+        function fetchReservations(date) {
+            if (date) {
+                fetch(`reserve.php?date=${date}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        const checkboxes = document.querySelectorAll('#reservationTable input[type="checkbox"]');
+                        checkboxes.forEach(checkbox => {
+                            checkbox.disabled = false; // Enable all checkboxes
+                            checkbox.onclick = null; // Remove previous onclick event
+                        });
+
+                        data.forEach(reservation => {
+                            const { room, time, name } = reservation;
+                            const checkbox = document.querySelector(`#reservationTable input[value="${room},${time}"]`);
+                            if (checkbox) {
+                                checkbox.disabled = true; // Disable already booked slots
+                                checkbox.onclick = function() {
+                                    showPopup(`This slot is already booked by ${name}.`);
+                                };
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching reservations:', error);
+                        document.getElementById('error-message').textContent = 'Failed to fetch reservations. Please try again later.';
+                    });
+            }
+        }
+
+        // Automatically fetch reservations for today's date on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setDateToToday();
+            fetchReservations(today);
+        });
+
+        // Fetch reservations when the date is changed
+        dateInput.addEventListener('change', function() {
+            fetchReservations(this.value);
+        });
+    </script>
+</body>
+</html>
